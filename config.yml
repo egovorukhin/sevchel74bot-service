@@ -1,0 +1,83 @@
+# Настройки веб сервера
+server:
+  certificate:
+    cert: ./cert/cert.pem
+    key: ./cert/key.pem
+    clientCert:
+  # web сервер
+  http:
+    port: 8050
+    secure: false
+    # set byte
+    #    buffer_size:
+    #      read:
+    #      write:
+    timeout:
+      read: 30
+      write: 30
+      idle: 30
+    # https://docs.gofiber.io/api/middleware/logger
+    logger:
+      format: "[${time}] ${ip} ${protocol} ${status} - ${latency} ${method} ${url}"
+      filename: web
+      time:
+        # golang time format
+        format: 15:04:05
+        zone: Local
+        # millisecond
+        interval: 500
+
+  # webhook сервер
+  webhook:
+    certificate:
+      cert: ./cert/cert.pem
+      key: ./cert/key.pem
+      clientCert:
+    port: 8443
+    secure: false
+    # set byte
+    #    buffer_size:
+    #      read:
+    #      write:
+    timeout:
+      read: 30
+      write: 30
+      idle: 30
+    # https://docs.gofiber.io/api/middleware/logger
+    logger:
+      format: "[${time}] ${ip} ${protocol} ${status} - ${latency} ${method} ${url}"
+      filename: webhook
+      time:
+        # golang time format
+        format: 15:04:05
+        zone: Local
+        # millisecond
+        interval: 500
+
+# Настройки telegram клиента
+telegram:
+  url: https://api.telegram.org/bot6238493597:AAGsz--zRI2Z_SEtzLF60x1Ok3oHVSeLBhM
+  timeout: 30
+
+
+# Настройки логера
+logger:
+  #	Ldate(1) = 1 << iota            the date in the local time zone: 2009/01/23
+  # Ltime(2)                        the time in the local time zone: 01:23:23
+  #	Lmicroseconds(4)                microsecond resolution: 01:23:23.123123.  assumes Ltime.
+  #	Llongfile(8)                    full meta name and line number: /a/b/c/d.go:23
+  #	Lshortfile(16)                  final meta name element and line number: d.go:23. overrides Llongfile
+  #	LUTC(32)                        if Ldate or Ltime is set, use UTC rather than the local time zone
+  #	Lmsgprefix(64)                  move the "prefix" from the beginning of the line to before the message
+  #	LstdFlags(3) = Ldate | Ltime    initial values for the standard logger
+  dirPath: logs
+  info: 3
+  error: 1 | 4 | 8
+  debug: 1 | 4 | 8
+  # size - в КБ
+  # format - %name имя файл, %time - текущее время
+  # path - путь куда перенести файл
+  rotation:
+    size: 10240
+    format: "%name_old"
+    path:
