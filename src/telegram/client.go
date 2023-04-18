@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"fmt"
 	"github.com/egovorukhin/egorest"
 	"time"
 )
@@ -10,9 +11,15 @@ type Config struct {
 	Timeout int    `yaml:"timeout"`
 }
 
-type Response struct {
+type GetResponse struct {
 	OK     bool        `json:"ok"`
 	Result interface{} `json:"result"`
+}
+
+type PostResponse struct {
+	OK          bool   `json:"ok"`
+	ErrorCode   int    `json:"error_code"`
+	Description string `json:"description"`
 }
 
 var client *egorest.Client
@@ -27,21 +34,37 @@ func Init(c Config) {
 	})
 }
 
-// GetMe Инфа обо мне
-func GetMe() (Me, error) {
-	req := egorest.NewRequest("/getMe")
-	resp := Response{
-		Result: Me{},
+func Watch() error {
+	u, err := GetUpdates()
+	if err != nil {
+		return err
 	}
-	err := client.ExecuteGet(req, &resp)
-	return resp.Result.(Me), err
+	for _, update := range u {
+		if update.Message.Text == AboutCommand {
+			err = About(update.Message.Chat.Id)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
-func GetUpdates() (Response, error) {
-	req := egorest.NewRequest("/getUpdates")
-	resp := Response{
-		Result: Me{},
+func ExecuteGet(path string, v interface{}) error {
+	req := egorest.NewRequest(path)
+	resp := GetResponse{
+		Result: v,
 	}
-	err := client.ExecuteGet(req, &resp)
-	return resp.Result.(Me), err
+	return client.ExecuteGet(req, &resp)
+}
+
+func ExecutePost(path string, data interface{}) (*PostResponse, error) {
+	req := egorest.NewRequest(path).JSON(data)
+	resp := &PostResponse{}
+	err := client.ExecutePost(req, resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

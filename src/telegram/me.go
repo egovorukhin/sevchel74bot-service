@@ -9,3 +9,13 @@ type Me struct {
 	CanReadAllGroupMessages bool   `json:"can_read_all_group_messages"`
 	SupportsInlineQueries   bool   `json:"supports_inline_queries"`
 }
+
+// GetMe Инфа обо мне
+func GetMe() (*Me, error) {
+	me := &Me{}
+	err := ExecuteGet("getMe", me)
+	if err != nil {
+		return nil, err
+	}
+	return me, nil
+}

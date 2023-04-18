@@ -29,4 +29,9 @@ type Update struct {
 	} `json:"message"`
 }
 
-type Updates []*Update
+type Updates []Update
+
+func GetUpdates() (u []Update, err error) {
+	err = ExecuteGet("/getUpdates", &u)
+	return
+}
