@@ -21,20 +21,22 @@ alter table "user"
 
 create table moderator
 (
-    id          serial
+    id              serial
         primary key,
-    name        varchar(255)                    not null
+    name            varchar(255)                    not null
         unique,
-    description text,
-    pattern     text,
-    words       text,
-    delete      boolean   default true          not null,
-    warn        boolean   default true          not null,
-    warn_number integer   default '-1'::integer not null,
-    enabled     boolean   default true          not null,
-    created     timestamp default now()         not null,
-    modified    timestamp default now()         not null,
-    author      varchar(255)
+    description     text,
+    pattern         text,
+    words           text,
+    delete          boolean   default true          not null,
+    warn            boolean   default true          not null,
+    warn_number     integer   default '-1'::integer not null,
+    enabled         boolean   default true          not null,
+    created         timestamp default now()         not null,
+    modified        timestamp default now()         not null,
+    author          varchar(255),
+    until_date      bigint    default 86400         not null,
+    revoke_messages boolean   default false         not null
 );
 
 alter table moderator
