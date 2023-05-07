@@ -34,7 +34,7 @@ func (b *Bot) Start() (err error) {
 	egolog.Infofn(b.Name, "start updates")
 	defer egolog.Infofn(b.Name, "stop updates")
 
-	bot.bot, err = tbApi.NewBotAPI(b.Token)
+	b.bot, err = tbApi.NewBotAPI(b.Token)
 	if err != nil {
 		return
 	}
