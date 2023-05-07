@@ -26,7 +26,7 @@ type Config struct {
 }*/
 
 func init() {
-	info.SetName("Gonec Service")
+	info.SetName("SevChel74 Bot Service")
 	info.SetVersion(0, 0, 1)
 }
 

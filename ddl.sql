@@ -44,13 +44,15 @@ create table chat
 (
     id          serial
         primary key,
-    chat_id     integer                 not null
+    chat_id     bigint                  not null
         unique,
     title       varchar(255),
     type        varchar(255),
     description text,
     created     timestamp default now() not null,
-    modified    timestamp default now() not null
+    modified    timestamp default now() not null,
+    author      varchar(255),
+    enabled     boolean   default true  not null
 );
 
 alter table chat

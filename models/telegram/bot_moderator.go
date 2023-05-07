@@ -22,7 +22,7 @@ type ViewBotModerator struct {
 type ViewBotModerators []*ViewBotModerator
 
 const (
-	vwBotModerator = "telegram.vw_bot_moderator"
+	vwBotModerator = "sevchel.vw_bot_moderator"
 )
 
 func GetViewBotModerator(query string, args ...interface{}) (s *ViewBotModerator, err error) {

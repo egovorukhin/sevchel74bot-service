@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	info "github.com/egovorukhin/egoappinfo"
 	"github.com/egovorukhin/egolog"
 	tbApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
@@ -22,10 +23,12 @@ type Bot struct {
 }
 
 type Moderator struct {
-	Pattern    string                 `json:"pattern"`
-	Words      map[string]interface{} `json:"words"`
-	Warn       bool                   `json:"warn"`
-	WarnNumber int                    `json:"warn_number"`
+	Pattern        string                 `json:"pattern"`
+	Words          map[string]interface{} `json:"words"`
+	Warn           bool                   `json:"warn"`
+	WarnNumber     int                    `json:"warn_number"`
+	UntilDate      int64                  `json:"until_date"`
+	RevokeMessages bool                   `json:"revoke_messages"`
 }
 
 // Start Запуск бота
@@ -39,7 +42,7 @@ func (b *Bot) Start() (err error) {
 		return
 	}
 
-	updateConfig := tbApi.NewUpdate(0)
+	updateConfig := tbApi.NewUpdate(1)
 	updateConfig.Timeout = b.Timeout
 
 	for update := range b.bot.GetUpdatesChan(updateConfig) {
@@ -63,11 +66,22 @@ func (b *Bot) receive(message *tbApi.Message) (err error) {
 
 	// Проверка на команды
 	switch message.Text {
-	case "/start":
+	case fmt.Sprintf("/start@%s", b.Name):
+	case fmt.Sprintf("/about@%s", b.Name):
+		if message.Chat != nil {
+			app := info.GetApplication()
+			return b.SendMessage(message.Chat.ID, fmt.Sprintf("%s v.%s", app.Name, app.Version.String()))
+		}
 	}
 
 	// Проверка на нового пользователя в группе
-	err = b.NewChatMembers(message.NewChatMembers)
+	err = b.NewChatMembers(message.NewChatMembers, message.Chat)
+	if err != nil {
+		return err
+	}
+
+	// Проверка на покидание пользователя в группе
+	err = b.LeftChatMember(message.LeftChatMember)
 	if err != nil {
 		return err
 	}
@@ -83,11 +97,11 @@ func (b *Bot) receive(message *tbApi.Message) (err error) {
 	return nil
 }
 
-func (b *Bot) moderator(message *tbApi.Message) error {
+func (b *Bot) moderator(message *tbApi.Message) (err error) {
 
+	var isWarning, ok bool
 	if b.Moderator.Pattern != "" {
-		ok, err := regexp.MatchString(b.Moderator.Pattern, message.Text)
-		if err != nil {
+		if ok, err = regexp.MatchString(b.Moderator.Pattern, message.Text); err != nil {
 			return err
 		}
 		if ok {
@@ -95,55 +109,34 @@ func (b *Bot) moderator(message *tbApi.Message) error {
 			if err != nil {
 				return err
 			}
+			isWarning = true
 		}
 	}
 
 	if len(b.Moderator.Words) > 0 {
 		for _, word := range strings.Split(message.Text, " ") {
-			if _, ok := b.Moderator.Words[strings.ToLower(word)]; ok {
-				err := b.DeleteMessage(message.Chat.ID, message.MessageID)
+			if _, ok = b.Moderator.Words[strings.ToLower(word)]; ok {
+				err = b.DeleteMessage(message.Chat.ID, message.MessageID)
 				if err != nil {
 					return err
 				}
-				if b.Moderator.Warn && message.From != nil {
-					err = b.SetUser(*message.From, true)
-					if err != nil {
-						return err
-					}
-				}
+				isWarning = true
 				break
 			}
 		}
 	}
 
-	return nil
-}
-
-func (b *Bot) SetUser(user tbApi.User, incrementWarnCount bool) error {
-	u, err := telegram.GetUser("user_id=?", user.ID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			u = &telegram.User{
-				Username:  user.UserName,
-				Firstname: user.FirstName,
-				Lastname:  user.LastName,
-				UserId:    user.ID,
-			}
-			if incrementWarnCount {
-				u.WarnCount = 1
-			}
-			err = u.Insert()
-			if err != nil {
-				return err
-			}
-			return nil
+	if isWarning && b.Moderator.Warn && message.From != nil {
+		u, err := telegram.SetUser(message.From.ID, message.From.UserName, message.From.FirstName, message.From.LastName, true)
+		if err != nil {
+			return err
 		}
-		return err
+		if u.WarnCount >= b.Moderator.WarnNumber {
+			return b.BanChatMember(u.UserId, message.Chat, message.Date)
+		}
 	}
-	if incrementWarnCount {
-		u.WarnCount++
-	}
-	return u.Update()
+
+	return nil
 }
 
 // SendMessage Отправить сообщение
@@ -170,6 +163,27 @@ func (b *Bot) SendMessageToChannel(username, text string) error {
 	return nil
 }
 
+func (b *Bot) BanChatMember(userId int64, chat *tbApi.Chat, messageDate int) error {
+	ban := tbApi.BanChatMemberConfig{
+		ChatMemberConfig: tbApi.ChatMemberConfig{
+			ChatID:             chat.ID,
+			SuperGroupUsername: chat.UserName,
+			ChannelUsername:    "",
+			UserID:             userId,
+		},
+		UntilDate:      int64(messageDate) + b.Moderator.UntilDate,
+		RevokeMessages: b.Moderator.RevokeMessages,
+	}
+	r, err := b.bot.Request(ban)
+	if err != nil {
+		return err
+	}
+	if string(r.Result) == "false" {
+		return fmt.Errorf("Не удалось забанить участника[%s]", userId)
+	}
+	return nil
+}
+
 // DeleteMessage Удалить сообщение
 func (b *Bot) DeleteMessage(chatId int64, msgId int) error {
 	r, err := b.bot.Request(tbApi.NewDeleteMessage(chatId, msgId))
@@ -183,7 +197,7 @@ func (b *Bot) DeleteMessage(chatId int64, msgId int) error {
 }
 
 // NewChatMembers Добавленный пользователь в чат
-func (b *Bot) NewChatMembers(users []tbApi.User) error {
+func (b *Bot) NewChatMembers(users []tbApi.User, chat *tbApi.Chat) error {
 	for _, user := range users {
 		if !user.IsBot {
 			if b.Welcome {
@@ -192,8 +206,46 @@ func (b *Bot) NewChatMembers(users []tbApi.User) error {
 					return err
 				}
 			}
-			return b.SetUser(user, false)
+			_, err := telegram.SetUser(user.ID, user.UserName, user.FirstName, user.LastName, false)
+			if err != nil {
+				return err
+			}
+		} else if user.UserName == b.Name && chat != nil {
+			err := b.SetChat(chat)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+// LeftChatMember Удаление участника из чата
+func (b *Bot) LeftChatMember(user *tbApi.User) error {
+	if user == nil {
+		return nil
+	}
+	return telegram.RemoveUser(user.ID)
+}
+
+// SetChat Добавить чат
+func (b *Bot) SetChat(chat *tbApi.Chat) error {
+	c, err := telegram.GetChat("chat_id=?", chat.ID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c = &telegram.Chat{
+				ChatId:      chat.ID,
+				Title:       chat.Title,
+				Type:        chat.Type,
+				Description: chat.Description,
+			}
+			err = c.Insert()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		return err
+	}
+	return c.Update()
 }
