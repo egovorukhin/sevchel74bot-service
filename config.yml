@@ -4,61 +4,41 @@ server:
     cert: ./cert/cert.pem
     key: ./cert/key.pem
     clientCert:
-  # web сервер
-  http:
-    port: 8050
-    secure: false
-    # set byte
-    #    buffer_size:
-    #      read:
-    #      write:
-    timeout:
-      read: 30
-      write: 30
-      idle: 30
-    # https://docs.gofiber.io/api/middleware/logger
-    logger:
-      format: "[${time}] ${ip} ${protocol} ${status} - ${latency} ${method} ${url}"
-      filename: web
-      time:
-        # golang time format
-        format: 15:04:05
-        zone: Local
-        # millisecond
-        interval: 500
+  port: 8050
+  secure: false
+  # set byte
+  #    buffer_size:
+  #      read:
+  #      write:
+  timeout:
+    read: 30
+    write: 30
+    idle: 30
+  # https://docs.gofiber.io/api/middleware/logger
+  logger:
+    format: "[${time}] ${ip} ${protocol} ${status} - ${latency} ${method} ${url}"
+    filename: web
+    time:
+      # golang time format
+      format: 15:04:05
+      zone: Local
+      # millisecond
+      interval: 500
 
-  # webhook сервер
-  webhook:
-    certificate:
-      cert: ./cert/cert.pem
-      key: ./cert/key.pem
-      clientCert:
-    port: 8443
-    secure: false
-    # set byte
-    #    buffer_size:
-    #      read:
-    #      write:
-    timeout:
-      read: 30
-      write: 30
-      idle: 30
-    # https://docs.gofiber.io/api/middleware/logger
-    logger:
-      format: "[${time}] ${ip} ${protocol} ${status} - ${latency} ${method} ${url}"
-      filename: webhook
-      time:
-        # golang time format
-        format: 15:04:05
-        zone: Local
-        # millisecond
-        interval: 500
-
-# Настройки telegram клиента
-telegram:
-  url: https://api.telegram.org/bot6238493597:AAGsz--zRI2Z_SEtzLF60x1Ok3oHVSeLBhM
-  timeout: 30
-
+# Подключение к бд
+database:
+  server:
+    hostname: cce-ucdev1-lt3
+    port: 5432
+  username: gonec
+  password: N2I3eWZSRzZOSnpN
+  name: gonecdb
+  ssl: false
+  connConfig:
+    maxIdle: 10
+    maxOpen: 100
+    # set minutes
+    maxLifetime: 60
 
 # Настройки логера
 logger:

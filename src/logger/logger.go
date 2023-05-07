@@ -1,6 +1,8 @@
 package logger
 
-import "github.com/egovorukhin/egolog"
+import (
+	"github.com/egovorukhin/egolog"
+)
 
 type Config struct {
 	DirPath  string    `yaml:"dirPath"`
@@ -32,4 +34,6 @@ func Init(config Config) error {
 	return egolog.InitLogger(cfg, callback)
 }
 
-func callback(egolog.InfoLog) {}
+func callback(egolog.InfoLog) {
+
+}
