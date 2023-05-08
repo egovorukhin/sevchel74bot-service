@@ -4,7 +4,7 @@ server:
     cert: ./cert/cert.pem
     key: ./cert/key.pem
     clientCert:
-  port: 8050
+  addr: ':8050'
   secure: false
   # set byte
   #    buffer_size:

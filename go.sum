@@ -125,8 +125,8 @@ github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021/go.
 github.com/envoyproxy/go-control-plane v0.10.1/go.mod h1:AY7fTTXNdv/aJ2O5jwpxAPOWUZ7hQAEvzN5Pf27BkQQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E9/baC+qXE/TeeyBRzgJDws=
-github.com/ewa-go/ewa v0.0.15 h1:k5qIxMXjM12HGA28+i41DKEO0IE78aH43n/vBXyan/4=
-github.com/ewa-go/ewa v0.0.15/go.mod h1:CmQedhfEa2j/f4t5/ya9gz6Wuk1lnznJE8GcqjUr8FE=
+github.com/ewa-go/ewa v0.0.16 h1:82Wx/Z94ars+Wb8Gf0Ml/9xxJetlpMzlJZe9QFr6jZw=
+github.com/ewa-go/ewa v0.0.16/go.mod h1:CmQedhfEa2j/f4t5/ya9gz6Wuk1lnznJE8GcqjUr8FE=
 github.com/ewa-go/ewa-fiber v0.0.5 h1:4KGh+wY9MMT4QkcnJZY7zy82uL9gDMTKksSC8xjG9dg=
 github.com/ewa-go/ewa-fiber v0.0.5/go.mod h1:9QwoNhNhwQyZjakCOX/+9Gx16hlKGRe+43kYcWI35p8=
 github.com/ewa-go/jsonschema v0.5.0 h1:Lmed3fvATHiZF0sGLd2Tn9e2NiFvZebmmxA86i2HgkQ=

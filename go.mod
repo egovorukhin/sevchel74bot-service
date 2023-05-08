@@ -6,7 +6,7 @@ require (
 	github.com/egovorukhin/egoappinfo v0.0.6
 	github.com/egovorukhin/egoconf v0.3.3
 	github.com/egovorukhin/egolog v0.2.4
-	github.com/ewa-go/ewa v0.0.15
+	github.com/ewa-go/ewa v0.0.16
 	github.com/ewa-go/ewa-fiber v0.0.5
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gofiber/fiber/v2 v2.40.1

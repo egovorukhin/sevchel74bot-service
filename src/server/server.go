@@ -19,7 +19,7 @@ import (
 
 type Config struct {
 	Root        string       `yaml:"root,omitempty"`
-	Port        int          `yaml:"port"`
+	Addr        string       `yaml:"addr"`
 	Timeout     Timeout      `yaml:"timeout"`
 	Secure      bool         `yaml:"secure"`
 	Certificate *Certificate `yaml:"certificate,omitempty"`
@@ -53,7 +53,7 @@ type Time struct {
 func Init(cfg Config) error {
 
 	wsCfg := ewa.Config{
-		Port: cfg.Port,
+		Addr: cfg.Addr,
 		Views: &ewa.Views{
 			Root:   cfg.Root,
 			Engine: ef.Html,
